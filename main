@@ -1,18 +1,25 @@
 #! /bin/bash
 
 trap "rm -rf images/ && numFile=999999" EXIT SIGINT
+rm -rf ~/.cache/wal
 mkdir images
 magick $1 -coalesce images/out%05d.jpg
 numFiles=$(ls images/ | wc -l)
 numFile=0;
 sleepDuration=$(bc -l <<< "1/$2")
-if [ $(echo "$sleepDuration < 0.02" | bc -l) ]; then
-        sleepDuration=0.02
+if [ "$3" = "pink" ]; then
+	while [ $numFile -lt $numFiles ]; do
+		file=$(printf "images/out%05d.jpg" $numFile)
+		magick $file -modulate 180,160,180 $file
+		numFile=$((numFile + 1))
+	done
 fi
-echo $sleepDuration
+numFile=0;
+wal -i "images/out00001.jpg"
+echo "one"
 while [ $numFile -lt $numFiles ]; do
-        numFile=$(((numFile + 1) % numFiles))
-        file=$(printf "images/out%05d.jpg" $numFile)
-        feh --bg-scale $file
-        sleep $sleepDuration
+	numFile=$(((numFile + 1) % numFiles))
+	file=$(printf "images/out%05d.jpg" $numFile)
+	feh --bg-scale $file
+	sleep $sleepDuration
 done
